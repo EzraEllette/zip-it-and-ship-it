@@ -94,8 +94,7 @@ const zipFunction = async function (
   validateArchiveFormat(archiveFormat)
 
   const srcPath = resolve(relativeSrcPath)
-  const functions = await getFunctionsFromPaths([srcPath], { config: inputConfig, dedupe: true })
-
+  const functions = await getFunctionsFromPaths([srcPath], { config: inputConfig, dedupe: false })
   if (functions.size === 0) {
     return
   }
@@ -105,7 +104,6 @@ const zipFunction = async function (
     defaultModulesPath === undefined ? await getPluginsModulesPath(srcPath) : defaultModulesPath
 
   await makeDir(destFolder)
-
   const zipResult = await runtime.zipFunction({
     archiveFormat,
     config,

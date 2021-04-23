@@ -12,6 +12,7 @@ const unixify = require('unixify')
 
 const { startZip, addZipFile, addZipContent, endZip } = require('./archive')
 const { ARCHIVE_FORMAT_ZIP } = require('./utils/consts')
+const { toFunctionName } = require('./utils/core_utils')
 
 const pStat = promisify(fs.stat)
 const pWriteFile = promisify(fs.writeFile)
@@ -35,7 +36,6 @@ const createDirectory = async function ({
     mainFile,
   })
   const functionFolder = join(destFolder, basename(filename, extension))
-
   // Deleting the functions directory in case it exists before creating it.
   await deleteFiles(functionFolder, { force: true })
   await makeDir(functionFolder)
@@ -69,13 +69,12 @@ const createZipArchive = async function ({
   pluginsModulesPath,
   srcFiles,
 }) {
-  const destPath = join(destFolder, `${basename(filename, extension)}.zip`)
+  const destPath = join(destFolder, `${basename(toFunctionName(filename), extension)}.zip`)
   const { archive, output } = startZip(destPath)
 
   addEntryFile(basePath, archive, filename, mainFile)
 
   const srcFilesInfos = await Promise.all(srcFiles.map(addStat))
-
   // We ensure this is not async, so that the archive's checksum is
   // deterministic. Otherwise it depends on the order the files were added.
   srcFilesInfos.forEach(({ srcFile, stat }) => {
@@ -83,7 +82,6 @@ const createZipArchive = async function ({
   })
 
   await endZip(archive, output)
-
   return destPath
 }
 
@@ -91,7 +89,6 @@ const zipNodeJs = function ({ archiveFormat, ...options }) {
   if (archiveFormat === ARCHIVE_FORMAT_ZIP) {
     return createZipArchive(options)
   }
-
   return createDirectory(options)
 }
 
@@ -107,13 +104,14 @@ const addStat = async function (srcFile) {
   return { srcFile, stat }
 }
 
-const getEntryFile = ({ commonPrefix, filename, mainFile }) => {
-  const mainPath = normalizeFilePath(mainFile, commonPrefix)
+const getEntryFile = ({ filename, mainFile }) => {
+  // const mainPath = normalizeFilePath(mainFile, commonPrefix)
   const extension = extname(filename)
-  const entryFilename = `${basename(filename, extension)}.js`
+  const entryFilename = `${basename(toFunctionName(filename), extension)}.js`
 
   return {
-    contents: `module.exports = require('./${mainPath}')`,
+    // eslint-disable-next-line node/no-sync
+    contents: fs.readFileSync(mainFile).toString(),
     filename: entryFilename,
   }
 }
@@ -131,11 +129,15 @@ const normalizeFilePath = function (path, commonPrefix, pluginsModulesPath) {
   const pathA = normalize(path)
   const pathB =
     pluginsModulesPath === undefined ? pathA : pathA.replace(pluginsModulesPath, `${ZIP_ROOT_DIR}${sep}node_modules`)
-  const pathC = pathB.replace(commonPrefix, `${ZIP_ROOT_DIR}${sep}`)
+  // eslint-disable-next-line prefer-destructuring
+  const packageName = pathB.split('node_modules/')[1].split('/')[0]
+  const pathC = pathB.replace(commonPrefix, `${ZIP_ROOT_DIR}${sep}${packageName}/`)
+
   const pathD = unixify(pathC)
+
   return pathD
 }
 
-const ZIP_ROOT_DIR = 'src'
+const ZIP_ROOT_DIR = 'node_modules'
 
 module.exports = { zipNodeJs }

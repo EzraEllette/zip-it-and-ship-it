@@ -4,6 +4,8 @@ const { promisify } = require('util')
 
 const locatePath = require('locate-path')
 
+const { toFunctionName } = require('../../utils/core_utils')
+
 const pLstat = promisify(lstat)
 
 // List of extensions that this runtime will look for, in order of precedence.
@@ -62,7 +64,7 @@ const getFunctionAtPath = async function (srcPath) {
 
   const extension = extname(srcPath)
   const srcDir = stat.isDirectory() ? srcPath : dirname(srcPath)
-  const name = basename(srcPath, extname(srcPath))
+  const name = toFunctionName(srcPath)
 
   return { extension, mainFile, name, srcDir, srcPath, stat }
 }

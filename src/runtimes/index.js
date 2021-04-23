@@ -1,4 +1,4 @@
-const { extname, basename } = require('path')
+const { extname } = require('path')
 
 const { getConfigForFunction } = require('../config')
 
@@ -30,7 +30,7 @@ const findFunctionsInRuntime = async function ({ dedupe = false, paths, runtime 
     {
       ...func,
       extension: extname(func.mainFile),
-      filename: basename(func.srcPath),
+      filename: func.srcPath.replace('/', '-'),
       runtime,
     },
   ])

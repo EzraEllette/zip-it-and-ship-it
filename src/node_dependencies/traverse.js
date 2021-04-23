@@ -56,7 +56,6 @@ const getDependencyNamesAndPathsForDependencies = async function ({
   )
   const moduleNames = new Set(dependencies.flatMap((dependency) => [...dependency.moduleNames]))
   const paths = new Set(dependencies.flatMap((dependency) => [...dependency.paths]))
-
   return {
     moduleNames: [...moduleNames],
     paths: [...paths],
@@ -72,7 +71,6 @@ const getDependencyNamesAndPathsForDependency = async function ({
 }) {
   try {
     const paths = await getDependencyPathsForDependency({ dependency, basedir, state, packageJson, pluginsModulesPath })
-
     return {
       moduleNames: [...state.moduleNames],
       paths,

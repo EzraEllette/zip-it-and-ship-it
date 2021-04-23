@@ -30,7 +30,6 @@ const listFilesUsingLegacyBundler = async function ({ srcPath, mainFile, srcDir,
   ])
   const files = [...treeFiles, ...depFiles].map(normalize)
   const uniqueFiles = [...new Set(files)]
-
   // We sort so that the archive's checksum is deterministic.
   // Mutating is fine since `Array.filter()` returns a shallow copy
   // eslint-disable-next-line fp/no-mutating-methods

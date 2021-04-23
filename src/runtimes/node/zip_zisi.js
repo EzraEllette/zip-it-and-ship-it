@@ -29,6 +29,7 @@ const zipZisi = async ({
     stat,
   })
   const dirnames = srcFiles.map((filePath) => normalize(dirname(filePath)))
+
   const path = await zipNodeJs({
     archiveFormat,
     basePath: commonPathPrefix(dirnames),
